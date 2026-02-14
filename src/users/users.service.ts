@@ -105,12 +105,12 @@ export class UsersService {
   }
 
   async createAdmin() {
-    const email = 'admin@gmail.com';
+    const email = 'fergagold@gmail.com';
     const existing = await this.userModel.findOne({ where: { email } });
 
     if (existing) return existing;
 
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const hashedPassword = await bcrypt.hash('fergagold123', 10);
 
     const admin = await this.userModel.create({
       email,
@@ -121,7 +121,7 @@ export class UsersService {
     return {
       message: 'DEFAULT Admin yaratildi',
       admin: result,
-      password: 'admin123',
+      password: 'fergagold123',
     };
   }
 
