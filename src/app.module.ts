@@ -15,20 +15,17 @@ import { Category } from './categories/category.model';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    SequelizeModule.forRoot({
-      dialect: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT) || 5432,
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_DATABASE || 'ecommerce',
-      models: [User, Category, Product],
-      autoLoadModels: true,
-      synchronize: true,       // Developmentda true bo‘lsin
-      // sync: { force: true },            // Har safar DBni tozalab yaratadi
-      logging: false,
-    }),
+   SequelizeModule.forRoot({
+  dialect: 'postgres',
+  uri: process.env.DATABASE_URL,   // 🔥 asosiy o‘zgarish
+  models: [User, Category, Product],
+  autoLoadModels: true,
+  synchronize: true,
+  logging: false,
+}),
+
     SharedModule, 
+    // sync: { force: true },            // Har safar DBni tozalab yaratadi
      GuardsModule,      // ✅ 1-o'rinda
     UsersModule,       // ✅ 2-o'rinda (GuardsModule dan keyin)
     CategoriesModule,  // ✅ 3-o'rinda
