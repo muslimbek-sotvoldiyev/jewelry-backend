@@ -19,7 +19,7 @@ export class ProductsService {
   private getBaseUrl(): string {
     const protocol = this.request.protocol; // http yoki https
     const host = this.request.get('host'); // localhost:3001
-    return `${protocol}://${host}/`; // API prefix qo'shildi
+    return `${protocol}:/${host}/`; // API prefix qo'shildi
   }
 
   // ✅ Rasmlar URL ini to'liq qilish

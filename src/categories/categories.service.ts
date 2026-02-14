@@ -19,7 +19,7 @@ export class CategoriesService {
   private getBaseUrl(): string {
     const protocol = this.request.protocol;
     const host = this.request.get('host');
-    return `${protocol}://${host}/`; // API prefix qo'shildi
+    return `${protocol}:/${host}/`; // API prefix qo'shildi
   }
 
   // ✅ Rasmlar URL ini to'liq qilish
