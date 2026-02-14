@@ -7,9 +7,9 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // CORS ni yoqish (Frontend uchun)
+  // 🔓 CORS hamma joyga ochiq
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'], // Frontend URL
+    origin: '*',
     credentials: true,
   });
 
@@ -17,22 +17,19 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true, // ✅ MUHIM - Bu yoqilgan bo'lishi kerak
+      transform: true, // ✅ MUHIM
       transformOptions: {
-        enableImplicitConversion: true, // ✅ Qo'shimcha yoqish
+        enableImplicitConversion: true, // ✅ Qo'shimcha
       },
     }),
   );
 
   // Global prefix
   app.setGlobalPrefix('api');
-  console.log("join: ",join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
-  ;
 
+  // Statik fayllar uchun uploads papkasi
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
-  prefix: '/uploads/',
+    prefix: '/uploads/',
   });
 
   const port = process.env.PORT || 3000;
