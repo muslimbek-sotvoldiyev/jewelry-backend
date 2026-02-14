@@ -35,7 +35,7 @@ async function bootstrap() {
   prefix: '/uploads/',
   });
 
-  const port = process.env.PORT || 3001;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
 
   console.log(`🚀 Server ishga tushdi: http://localhost:${port}`);
