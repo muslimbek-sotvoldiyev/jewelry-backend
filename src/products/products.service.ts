@@ -6,30 +6,34 @@ import { Request } from 'express';
 import { Product } from './product.model';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { Category } from '../categories/category.model';
+import * as fs from 'fs';
+import * as path from 'path';
 
-@Injectable({ scope: Scope.REQUEST }) // ✅ REQUEST scope
+@Injectable({ scope: Scope.REQUEST })
 export class ProductsService {
   constructor(
     @InjectModel(Product)
     private productModel: typeof Product,
-    @Inject(REQUEST) private request: Request, // ✅ Request inject
+    @Inject(REQUEST) private request: Request,
   ) {}
 
-  // ✅ Request dan base URL ni olish
   private getBaseUrl(): string {
-    const protocol = this.request.protocol; // http yoki https
-    const host = this.request.get('host'); // localhost:3001
-    return `${protocol}:/${host}/`; // API prefix qo'shildi
+    const protocol = this.request.headers['x-forwarded-proto'] || this.request.protocol;
+    const host = this.request.get('host');
+    return `${protocol}://${host}`;
   }
 
-  // ✅ Rasmlar URL ini to'liq qilish
   private formatImageUrls(images: string[]): string[] {
     if (!images || images.length === 0) return [];
     const baseUrl = this.getBaseUrl();
-    return images.map(img => `${baseUrl}/uploads/${img}`);
+    return images.map(img => {
+      if (img.startsWith('http://') || img.startsWith('https://')) {
+        return img;
+      }
+      return `${baseUrl}/uploads/${img}`;
+    });
   }
 
-  // ✅ Product ni format qilish
   private formatProduct(product: any) {
     const productData = product.toJSON ? product.toJSON() : product;
     return {
@@ -38,7 +42,21 @@ export class ProductsService {
     };
   }
 
+  private deleteImageFile(filename: string): void {
+    try {
+      const filePath = path.join(process.cwd(), 'uploads', filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('[deleteImageFile] ✅ Deleted:', filename);
+      }
+    } catch (error) {
+      console.error('[deleteImageFile] ❌ Error:', error);
+    }
+  }
+
   async create(createProductDto: CreateProductDto, images: string[]) {
+    console.log('[create] Creating product:', createProductDto);
+    
     const product = await this.productModel.create({
       ...createProductDto,
       images,
@@ -77,20 +95,56 @@ export class ProductsService {
     return this.formatProduct(product);
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto, images: string[]) {
-    const product = await this.productModel.findByPk(id);
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+    newImages: string[],
+  ) {
+    console.log('[update] ========== UPDATE START ==========');
     
+    const product = await this.productModel.findByPk(id);
+
     if (!product) {
       throw new NotFoundException(`Product ID ${id} topilmadi`);
     }
 
-    if (images && images.length > 0) {
-      await product.update({ ...updateProductDto, images } as any);
-    } else {
-      await product.update(updateProductDto);
+    let updatedImages = [...(product.images || [])];
+
+    // O'chiriladigan rasmlar
+    if (updateProductDto.removeImages && updateProductDto.removeImages.length > 0) {
+      updateProductDto.removeImages.forEach(imageName => {
+        this.deleteImageFile(imageName);
+      });
+      
+      updatedImages = updatedImages.filter(
+        img => !updateProductDto.removeImages.includes(img),
+      );
     }
+
+    // Yangi rasmlar
+    if (newImages && newImages.length > 0) {
+      updatedImages = [...updatedImages, ...newImages];
+    }
+
+    // Maksimal 5 ta
+    if (updatedImages.length > 5) {
+      updatedImages = updatedImages.slice(0, 5);
+    }
+
+    await product.update({
+      ...updateProductDto,
+      images: updatedImages,
+      removeImages: undefined,
+    });
+
+    const updatedProduct = await this.productModel.findByPk(id, {
+      include: [{ model: Category }],
+    });
     
-    return this.findOne(id);
+    console.log('[update] ✅ Product updated');
+    console.log('[update] ========== UPDATE END ==========');
+    
+    return this.formatProduct(updatedProduct);
   }
 
   async remove(id: number) {
@@ -100,7 +154,14 @@ export class ProductsService {
       throw new NotFoundException(`Product ID ${id} topilmadi`);
     }
     
+    if (product.images && product.images.length > 0) {
+      product.images.forEach(imageName => {
+        this.deleteImageFile(imageName);
+      });
+    }
+    
     await product.destroy();
+    
     return { message: 'Product muvaffaqiyatli o\'chirildi' };
   }
 }
