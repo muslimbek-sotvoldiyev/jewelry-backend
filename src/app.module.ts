@@ -22,10 +22,10 @@ import { Category } from './categories/category.model';
   autoLoadModels: true,
   synchronize: true,
   logging: false,
+  // sync: { force: true },            // Har safar DBni tozalab yaratadi
 }),
 
     SharedModule, 
-    // sync: { force: true },            // Har safar DBni tozalab yaratadi
      GuardsModule,      // ✅ 1-o'rinda
     UsersModule,       // ✅ 2-o'rinda (GuardsModule dan keyin)
     CategoriesModule,  // ✅ 3-o'rinda

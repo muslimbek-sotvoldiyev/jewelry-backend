@@ -1,15 +1,19 @@
+// src/products/product.model.ts
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Category } from '../categories/category.model';
 
-@Table({
-  tableName: 'products',
-  timestamps: true,
-})
+export enum Quality {
+  K14 = '14K',
+  K18 = '18K',
+  K22 = '22K',
+}
+
+@Table({ tableName: 'products' })
 export class Product extends Model {
   @Column({
     type: DataType.INTEGER,
-    autoIncrement: true,
     primaryKey: true,
+    autoIncrement: true,
   })
   id: number;
 
@@ -20,12 +24,29 @@ export class Product extends Model {
   name: string;
 
   @Column({
-    type: DataType.DECIMAL(10, 2),
+    type: DataType.DECIMAL(10, 2), // 10 digits, 2 decimal places
     allowNull: false,
   })
-  weight: number; // gramda
+  weight: number; // gramm (float)
 
-  // Images Multer orqali keladi, DBda saqlash uchun string array
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  comment: string; // Izoh
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  size: string; // O'lcham
+
+  @Column({
+    type: DataType.ENUM(...Object.values(Quality)),
+    allowNull: true,
+  })
+  quality: Quality; // Sifat: 14K, 18K, 22K
+
   @Column({
     type: DataType.ARRAY(DataType.STRING),
     defaultValue: [],
