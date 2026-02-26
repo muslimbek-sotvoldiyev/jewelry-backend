@@ -17,5 +17,5 @@ export const multerOptions = {
       cb(null, `${randomName}${extname(file.originalname)}`);
     },
   }),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
 };
