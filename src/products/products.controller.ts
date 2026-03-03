@@ -1,36 +1,41 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  UseGuards, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
   Query,
   UploadedFiles,
-  UseInterceptors
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import type { Multer } from 'multer';
 import { ProductsService } from './products.service';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';;
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { multerOptions } from '../config/multer.config';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
-@UseGuards(AuthGuard)
-@Post()
-@UseInterceptors(FilesInterceptor('images', 5, multerOptions))
-create(
-  @Body() createProductDto: CreateProductDto,
-  @UploadedFiles() files: Multer.File[],
-) {
-  const imagePaths = files?.map(file => file.filename) || [];
-  return this.productsService.create(createProductDto, imagePaths);
-}
+
+  @UseGuards(AuthGuard)
+  @Post()
+  @UseInterceptors(FilesInterceptor('images', 5, multerOptions))
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFiles() files: Multer.File[],
+  ) {
+    if (!files || files.length === 0) {
+      throw new BadRequestException('Kamida 1 ta rasm yuklash shart');
+    }
+    const imagePaths = files.map((file) => file.filename);
+    return this.productsService.create(createProductDto, imagePaths);
+  }
 
   @Get()
   findAll(@Query('category_id') categoryId?: string) {
@@ -41,7 +46,8 @@ create(
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(+id);
   }
- @UseGuards(AuthGuard)
+
+  @UseGuards(AuthGuard)
   @Patch(':id')
   @UseInterceptors(FilesInterceptor('images', 5, multerOptions))
   update(
@@ -49,13 +55,13 @@ create(
     @Body() updateProductDto: UpdateProductDto,
     @UploadedFiles() images?: Multer.File[],
   ) {
-    const imagePaths = images?.map(file => file.filename) || [];
+    const imagePaths = images?.map((file) => file.filename) || [];
     return this.productsService.update(+id, updateProductDto, imagePaths);
   }
- @UseGuards(AuthGuard)
+
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
   }
-
 }

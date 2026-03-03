@@ -1,5 +1,4 @@
-// src/products/dto/product.dto.ts
-import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export enum Quality {
@@ -13,23 +12,25 @@ export class CreateProductDto {
   @IsNotEmpty()
   name: string;
 
-  @Transform(({ value }) => parseFloat(value)) // String'dan float'ga
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber()
   @IsNotEmpty()
-  weight: number; // gramm (float)
+  weight: number;
 
   @IsString()
   @IsOptional()
-  comment?: string; // Izoh
+  comment?: string;
 
   @IsString()
   @IsOptional()
-  size?: string; // O'lcham
+  size?: string;
 
   @IsEnum(Quality)
   @IsOptional()
-  quality?: Quality; // 14K, 18K, 22K
+  quality?: Quality;
 
   @Transform(({ value }) => Number(value))
+  @IsNumber()
   @IsNotEmpty()
   category_id: number;
 }
@@ -39,27 +40,37 @@ export class UpdateProductDto {
   @IsOptional()
   name?: string;
 
-  @Transform(({ value }) => parseFloat(value))
+  @Transform(({ value }) => (value !== undefined ? parseFloat(value) : undefined))
+  @IsNumber()
   @IsOptional()
-  weight?: number; // gramm (float)
+  weight?: number;
 
   @IsString()
   @IsOptional()
-  comment?: string; // Izoh
+  comment?: string;
 
   @IsString()
   @IsOptional()
-  size?: string; // O'lcham
+  size?: string;
 
   @IsEnum(Quality)
   @IsOptional()
-  quality?: Quality; // 14K, 18K, 22K
+  quality?: Quality;
 
-  @Transform(({ value }) => Number(value))
+  @Transform(({ value }) => (value !== undefined ? Number(value) : undefined))
+  @IsNumber()
   @IsOptional()
   category_id?: number;
 
-  @Transform(({ value }) => (value ? JSON.parse(value) : []))
+  @Transform(({ value }) => {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      return [];
+    }
+  })
   @IsOptional()
   removeImages?: string[];
 }
