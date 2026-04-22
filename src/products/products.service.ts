@@ -13,19 +13,18 @@ export class ProductsService {
     private productModel: typeof Product,
   ) {}
 
-  // .env dan o'qiymiz — Scope.REQUEST kerak emas
-  private getBaseUrl(): string {
-    return process.env.APP_URL || 'http://localhost:3000';
-  }
-
   private formatImageUrls(images: string[]): string[] {
     if (!images || images.length === 0) return [];
-    const baseUrl = this.getBaseUrl();
     return images.map((img) => {
       if (img.startsWith('http://') || img.startsWith('https://')) {
-        return img;
+        // Strip absolute origin, keep only the path so clients proxy through their own host
+        try {
+          return new URL(img).pathname;
+        } catch {
+          return img;
+        }
       }
-      return `${baseUrl}/uploads/${img}`;
+      return `/uploads/${img}`;
     });
   }
 
