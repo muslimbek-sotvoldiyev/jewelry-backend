@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-# RUN npx prisma generate && npm run build
+RUN npm run build
 
 
 
