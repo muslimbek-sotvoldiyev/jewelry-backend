@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: jewelry-postgres
+    environment:
+      POSTGRES_DB: jewelry
+      POSTGRES_USER: jewelry
+      POSTGRES_PASSWORD: jewelry
+    ports:
+      - "4321:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jewelry -d jewelry"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  jewelry-backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+
+    container_name: jewelry-backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://jewelry:jewelry@postgres:5432/jewelry
+
+    env_file:
+      - ../.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "4000:3000"
+
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

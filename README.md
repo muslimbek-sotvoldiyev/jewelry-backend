@@ -49,17 +49,14 @@ cp .env.example .env
 
 `.env` faylini tahrirlang:
 ```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=your_postgres_password
-DB_DATABASE=ecommerce
+DATABASE_URL=your db url
 
 JWT_ACCESS_SECRET=your-super-secret-access-key-change-this
 JWT_ACCESS_EXPIRATION=15m
 JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-this
 JWT_REFRESH_EXPIRATION=7d
 
+# For seeding
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=Admin123!
 ```
